@@ -1,0 +1,10 @@
+app:
+  port: 2243
+
+database:
+  host: 127.0.0.1
+  port: 5433
+  name: planner
+  user: user
+  password: 113446
+  parse_time: true
