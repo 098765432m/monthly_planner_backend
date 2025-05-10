@@ -1,0 +1,13 @@
+version: "2"
+sql:
+  # Users
+  - engine: "postgresql"
+    schema:
+      - "internal/database/schema/users.sql"
+    queries:
+      - "internal/database/queries/users.sql"
+    gen:
+      go:
+        out: "internal/repository/user"
+        package: "user_repository"
+        sql_package: "pgx/v5"
