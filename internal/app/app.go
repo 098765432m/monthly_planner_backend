@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -20,9 +21,12 @@ func Run() error {
 	}
 
 	//Connect to Database
-	db := database.Connect() // PostgreSQL
+	conn, err := database.Connect() // PostgreSQL
+	if err != nil {
+		zap.S().Fatal("Failed to connect to PostgreSQL")
+	}
 
-	defer db.Close()
+	defer conn.Close(context.Background())
 
 	//Initialize server
 	r := chi.NewRouter()
