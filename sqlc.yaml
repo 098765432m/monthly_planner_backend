@@ -9,5 +9,5 @@ sql:
     gen:
       go:
         out: "internal/repository/user"
-        package: "user"
+        package: "user_repository"
         sql_package: "pgx/v5"
