@@ -24,26 +24,26 @@ sql:
         package: "task_repository"
         sql_package: "pgx/v5"
 
-  # # Days
-  # - engine: "postgresql"
-  #   schema:
-  #     - "internal/database/schema/days.sql"
-  #   queries:
-  #     - "internal/database/queries/days.sql"
-  #   gen:
-  #     go:
-  #       out: "internal/repository/day"
-  #       package: "day_repository"
-  #       sql_package: "pgx/v5"
+  # Days
+  - engine: "postgresql"
+    schema:
+      - "internal/database/schema/days.sql"
+    queries:
+      - "internal/database/queries/days.sql"
+    gen:
+      go:
+        out: "internal/repository/day"
+        package: "day_repository"
+        sql_package: "pgx/v5"
 
-  # # Months
-  # - engine: "postgresql"
-  #   schema:
-  #     - "internal/database/schema/months.sql"
-  #   queries:
-  #     - "internal/database/queries/months.sql"
-  #   gen:
-  #     go:
-  #       out: "internal/repository/month"
-  #       package: "month_repository"
-  #       sql_package: "pgx/v5"
+  # Months
+  - engine: "postgresql"
+    schema:
+      - "internal/database/schema/months.sql"
+    queries:
+      - "internal/database/queries/months.sql"
+    gen:
+      go:
+        out: "internal/repository/month"
+        package: "month_repository"
+        sql_package: "pgx/v5"
