@@ -14,7 +14,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (username, password, email, phone_number)
 VALUES ($1, $2, $3, $4)
-RETURNING id, username, password, email, phone_number, is_active, created_at, updated_at
+RETURNING id, username, password, email, phone_number, is_active, role, created_at, updated_at
 `
 
 type CreateUserParams struct {
@@ -39,6 +39,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.Email,
 		&i.PhoneNumber,
 		&i.IsActive,
+		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -55,7 +56,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT id, username, password, email, phone_number, is_active, created_at, updated_at FROM users WHERE id = $1
+SELECT id, username, password, email, phone_number, is_active, role, created_at, updated_at FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUserById(ctx context.Context, id pgtype.UUID) (User, error) {
@@ -68,6 +69,7 @@ func (q *Queries) GetUserById(ctx context.Context, id pgtype.UUID) (User, error)
 		&i.Email,
 		&i.PhoneNumber,
 		&i.IsActive,
+		&i.Role,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 	)
@@ -75,7 +77,7 @@ func (q *Queries) GetUserById(ctx context.Context, id pgtype.UUID) (User, error)
 }
 
 const listUsers = `-- name: ListUsers :many
-SELECT id, username, password, email, phone_number, is_active, created_at, updated_at
+SELECT id, username, password, email, phone_number, is_active, role, created_at, updated_at
 FROM users
 ORDER BY created_at DESC
 LIMIT 20
@@ -97,6 +99,7 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 			&i.Email,
 			&i.PhoneNumber,
 			&i.IsActive,
+			&i.Role,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {

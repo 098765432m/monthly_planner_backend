@@ -16,6 +16,8 @@ sql:
   - engine: "postgresql"
     schema:
       - "internal/database/schema/tasks.sql"
+      - "internal/database/schema/days.sql"
+      - "internal/database/schema/months.sql"
     queries:
       - "internal/database/queries/tasks.sql"
     gen:

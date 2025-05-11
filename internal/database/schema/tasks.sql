@@ -5,4 +5,5 @@ CREATE TABLE tasks (
     status ENUM('NOT_DONE', 'DONE') NOT NULL DEFAULT 'NOT_DONE',
     time_start TIME,
     time_end TIME,
+    day_id UUID NOT NULL REFERENCES days(id) ON DELETE CASCADE
 )

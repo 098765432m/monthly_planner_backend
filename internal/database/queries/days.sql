@@ -2,7 +2,7 @@
 INSERT INTO days (date, day_of_week, month_id)
 VALUES ($1, $2, $3);
 
--- name: UpdateDay :one
+-- name: UpdateDayById :exec
 UPDATE days
 SET date = $2,
     day_of_week = $3,

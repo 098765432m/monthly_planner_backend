@@ -15,6 +15,7 @@ type User struct {
 	Email       string
 	PhoneNumber string
 	IsActive    bool
+	Role        interface{}
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 }
