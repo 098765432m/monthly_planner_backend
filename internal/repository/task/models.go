@@ -5,8 +5,53 @@
 package task_repository
 
 import (
+	"database/sql/driver"
+	"fmt"
+
 	"github.com/jackc/pgx/v5/pgtype"
 )
+
+type TaskStatusEnum string
+
+const (
+	TaskStatusEnumNOTDONE TaskStatusEnum = "NOT_DONE"
+	TaskStatusEnumDONE    TaskStatusEnum = "DONE"
+)
+
+func (e *TaskStatusEnum) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = TaskStatusEnum(s)
+	case string:
+		*e = TaskStatusEnum(s)
+	default:
+		return fmt.Errorf("unsupported scan type for TaskStatusEnum: %T", src)
+	}
+	return nil
+}
+
+type NullTaskStatusEnum struct {
+	TaskStatusEnum TaskStatusEnum
+	Valid          bool // Valid is true if TaskStatusEnum is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullTaskStatusEnum) Scan(value interface{}) error {
+	if value == nil {
+		ns.TaskStatusEnum, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.TaskStatusEnum.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullTaskStatusEnum) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.TaskStatusEnum), nil
+}
 
 type Day struct {
 	ID        pgtype.UUID
@@ -27,7 +72,7 @@ type Task struct {
 	ID          pgtype.UUID
 	Name        string
 	Description pgtype.Text
-	Status      interface{}
+	Status      TaskStatusEnum
 	TimeStart   pgtype.Time
 	TimeEnd     pgtype.Time
 	DayID       pgtype.UUID

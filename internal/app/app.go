@@ -7,6 +7,10 @@ import (
 
 	"github.com/098765432m/monthly_planner_backend/internal/config"
 	"github.com/098765432m/monthly_planner_backend/internal/database"
+	month_handler "github.com/098765432m/monthly_planner_backend/internal/handler"
+	day_repository "github.com/098765432m/monthly_planner_backend/internal/repository/day"
+	month_repository "github.com/098765432m/monthly_planner_backend/internal/repository/month"
+	month_service "github.com/098765432m/monthly_planner_backend/internal/service/month"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
@@ -35,10 +39,27 @@ func Run() error {
 
 	zap.S().Infof("Server running at port %s!", serverPort)
 
+	// Root
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Welcome to the homepage!"))
 	})
 
+	// Repository
+	dayRepo := day_repository.New(conn)
+	monthRepo := month_repository.New(conn)
+
+	// Service
+	monthService := month_service.NewMonthService(monthRepo, dayRepo)
+
+	// Handler
+	monthHandler := month_handler.NewMonthHandler(monthService)
+
+	//Chi Mount
+	r.Route("/api", func(api chi.Router) {
+
+		api.Mount("/months", monthHandler.Routes())
+
+	})
 	http.ListenAndServe(serverPortStr, r)
 
 	return nil

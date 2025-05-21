@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS months;
+
 CREATE TABLE months (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     year INT NOT NULL,

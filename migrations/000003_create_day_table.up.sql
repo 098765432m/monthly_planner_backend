@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS days;
+
 CREATE TABLE days (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     date DATE NOT NULL UNIQUE,

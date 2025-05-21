@@ -3,9 +3,9 @@ sql:
   # Users
   - engine: "postgresql"
     schema:
-      - "internal/database/schema/users.sql"
+      - "internal/database/schema/users.schema.sql"
     queries:
-      - "internal/database/queries/users.sql"
+      - "internal/database/queries/users.queries.sql"
     gen:
       go:
         out: "internal/repository/user"
@@ -15,11 +15,11 @@ sql:
   # Tasks
   - engine: "postgresql"
     schema:
-      - "internal/database/schema/tasks.sql"
-      - "internal/database/schema/days.sql"
-      - "internal/database/schema/months.sql"
+      - "internal/database/schema/tasks.schema.sql"
+      - "internal/database/schema/days.schema.sql"
+      - "internal/database/schema/months.schema.sql"
     queries:
-      - "internal/database/queries/tasks.sql"
+      - "internal/database/queries/tasks.queries.sql"
     gen:
       go:
         out: "internal/repository/task"
@@ -29,9 +29,9 @@ sql:
   # Days
   - engine: "postgresql"
     schema:
-      - "internal/database/schema/days.sql"
+      - "internal/database/schema/days.schema.sql"
     queries:
-      - "internal/database/queries/days.sql"
+      - "internal/database/queries/days.queries.sql"
     gen:
       go:
         out: "internal/repository/day"
@@ -41,9 +41,9 @@ sql:
   # Months
   - engine: "postgresql"
     schema:
-      - "internal/database/schema/months.sql"
+      - "internal/database/schema/months.schema.sql"
     queries:
-      - "internal/database/queries/months.sql"
+      - "internal/database/queries/months.queries.sql"
     gen:
       go:
         out: "internal/repository/month"

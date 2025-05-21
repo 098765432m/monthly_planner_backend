@@ -1,6 +1,7 @@
--- name: CreateMonth :exec
+-- name: CreateMonth :one
 INSERT INTO months (month, year)
-VALUES ($1, $2);
+VALUES ($1, $2)
+RETURNING id;
 
 -- name: DeleleMonth :exec
 DELETE FROM months
