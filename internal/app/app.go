@@ -7,17 +7,19 @@ import (
 
 	"github.com/098765432m/monthly_planner_backend/internal/config"
 	"github.com/098765432m/monthly_planner_backend/internal/database"
-	month_handler "github.com/098765432m/monthly_planner_backend/internal/handler"
+	month_handler "github.com/098765432m/monthly_planner_backend/internal/handler/month"
+	user_handler "github.com/098765432m/monthly_planner_backend/internal/handler/user"
+
 	day_repository "github.com/098765432m/monthly_planner_backend/internal/repository/day"
 	month_repository "github.com/098765432m/monthly_planner_backend/internal/repository/month"
+	user_repository "github.com/098765432m/monthly_planner_backend/internal/repository/user"
 	month_service "github.com/098765432m/monthly_planner_backend/internal/service/month"
+	user_service "github.com/098765432m/monthly_planner_backend/internal/service/user"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
 
 func Run() error {
-	// Init Global logger
-	zap.ReplaceGlobals(zap.Must(zap.NewDevelopment()))
 
 	// Init Config environment file
 	if err := config.LoadConfig(); err != nil {
@@ -45,19 +47,23 @@ func Run() error {
 	})
 
 	// Repository
+	userRepo := user_repository.New(conn)
 	dayRepo := day_repository.New(conn)
 	monthRepo := month_repository.New(conn)
 
 	// Service
+	userService := user_service.NewUserService(userRepo)
 	monthService := month_service.NewMonthService(monthRepo, dayRepo)
 
 	// Handler
+	userHandler := user_handler.NewUserHandler(userService)
 	monthHandler := month_handler.NewMonthHandler(monthService)
 
 	//Chi Mount
 	r.Route("/api", func(api chi.Router) {
 
-		api.Mount("/months", monthHandler.Routes())
+		api.Mount("/users", userHandler.RegisterRoutes())
+		api.Mount("/months", monthHandler.RegisterRoutes())
 
 	})
 	http.ListenAndServe(serverPortStr, r)

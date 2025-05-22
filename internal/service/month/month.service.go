@@ -34,10 +34,17 @@ func (s *MonthService) CreateMonth(ctx context.Context, month int8, year int16) 
 		Month: int32(month),
 		Year:  int32(year),
 	})
+
+	zap.S().Infof("MonthId: %v\n", monthId)
 	if err != nil {
 		zap.S().Error(err)
 		return err
 	}
+
+	zap.S().Infof("Month param: %#v\n", month)
+	zap.S().Infof("year param: %#v\n", year)
+	zap.S().Infof("Month: %#v\n", time.Month(month))
+	zap.S().Infof("year: %#v\n", int(year))
 
 	// Compute DateStart and DateEnd of a Month
 	dateStart, dateEnd, err := utils.GetDateStartAndEndOfMonth(time.Month(month), int(year))
@@ -46,11 +53,14 @@ func (s *MonthService) CreateMonth(ctx context.Context, month int8, year int16) 
 		return err
 	}
 
+	zap.S().Infof("date start: %#v\n", dateStart)
+	zap.S().Infof("date end: %#v\n", dateEnd)
+
 	//Create a range of days of above month
 	err = s.day_repo.CreateRangeOfDays(ctx, day_repository.CreateRangeOfDaysParams{
 		MonthID:   monthId,
-		DateStart: pgtype.Date{Time: dateStart},
-		DateEnd:   pgtype.Date{Time: dateEnd},
+		DateStart: pgtype.Date{Time: dateStart, Valid: true},
+		DateEnd:   pgtype.Date{Time: dateEnd, Valid: true},
 	})
 
 	if err != nil {

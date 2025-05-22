@@ -112,3 +112,32 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	}
 	return items, nil
 }
+
+const updateUser = `-- name: UpdateUser :exec
+UPDATE users
+SET username = $1,password = $2,email =  $3, phone_number = $4, is_active = $5, role = $6
+WHERE id = $7
+`
+
+type UpdateUserParams struct {
+	Username    string
+	Password    string
+	Email       string
+	PhoneNumber string
+	IsActive    bool
+	Role        RoleEnum
+	UserID      pgtype.UUID
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.Exec(ctx, updateUser,
+		arg.Username,
+		arg.Password,
+		arg.Email,
+		arg.PhoneNumber,
+		arg.IsActive,
+		arg.Role,
+		arg.UserID,
+	)
+	return err
+}

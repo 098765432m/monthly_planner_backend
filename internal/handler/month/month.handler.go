@@ -22,7 +22,7 @@ func NewMonthHandler(service *month_service.MonthService) *MonthHandler {
 	}
 }
 
-func (h *MonthHandler) Routes() chi.Router {
+func (h *MonthHandler) RegisterRoutes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Post("/", h.CreateMonth)

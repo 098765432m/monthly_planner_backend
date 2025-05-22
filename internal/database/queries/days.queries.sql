@@ -7,7 +7,7 @@ INSERT INTO days (date, day_of_week, month_id)
 SELECT 
     gs::date as date,
     EXTRACT(DOW FROM gs)::int as day_of_week,
-    @month_id::uuid as month_id
+    @month_id as month_id
 FROM generate_series(@date_start::date, @date_end::date, '1 day') AS gs;
 
 -- name: UpdateDayById :exec

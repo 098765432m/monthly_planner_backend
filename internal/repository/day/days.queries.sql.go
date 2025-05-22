@@ -32,7 +32,7 @@ INSERT INTO days (date, day_of_week, month_id)
 SELECT 
     gs::date as date,
     EXTRACT(DOW FROM gs)::int as day_of_week,
-    $1::uuid as month_id
+    $1 as month_id
 FROM generate_series($2::date, $3::date, '1 day') AS gs
 `
 

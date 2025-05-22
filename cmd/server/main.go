@@ -12,6 +12,9 @@ import (
 
 func main() {
 
+	// Init Global logger
+	zap.ReplaceGlobals(zap.Must(zap.NewDevelopment()))
+
 	// Load .env
 	if err := godotenv.Load(".env"); err != nil {
 		zap.S().Fatal("Failed to load .env")

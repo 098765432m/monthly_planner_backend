@@ -9,8 +9,13 @@ LIMIT 20;
 
 -- name: CreateUser :one
 INSERT INTO users (username, password, email, phone_number)
-VALUES ($1, $2, $3, $4)
-RETURNING *; 
+VALUES (@username, @password, @email, @phone_number)
+RETURNING *;
+
+-- name: UpdateUser :exec
+UPDATE users
+SET username = @username,password = @password,email =  @email, phone_number = @phone_number, is_active = @is_active, role = @role
+WHERE id = @user_id;
 
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1;
