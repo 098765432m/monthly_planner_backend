@@ -3,19 +3,18 @@ package app
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/098765432m/monthly_planner_backend/internal/config"
 	"github.com/098765432m/monthly_planner_backend/internal/database"
 	month_handler "github.com/098765432m/monthly_planner_backend/internal/handler/month"
 	user_handler "github.com/098765432m/monthly_planner_backend/internal/handler/user"
+	"github.com/gin-gonic/gin"
 
 	day_repository "github.com/098765432m/monthly_planner_backend/internal/repository/day"
 	month_repository "github.com/098765432m/monthly_planner_backend/internal/repository/month"
 	user_repository "github.com/098765432m/monthly_planner_backend/internal/repository/user"
 	month_service "github.com/098765432m/monthly_planner_backend/internal/service/month"
 	user_service "github.com/098765432m/monthly_planner_backend/internal/service/user"
-	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
 
@@ -35,16 +34,12 @@ func Run() error {
 	defer conn.Close(context.Background())
 
 	//Initialize server
-	r := chi.NewRouter()
+	r := gin.Default()
+	// r := chi.NewRouter()
 	serverPort := config.AppGlobalConfigData.App.Port
 	serverPortStr := fmt.Sprintf(":%s", serverPort)
 
 	zap.S().Infof("Server running at port %s!", serverPort)
-
-	// Root
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Welcome to the homepage!"))
-	})
 
 	// Repository
 	userRepo := user_repository.New(conn)
@@ -59,14 +54,10 @@ func Run() error {
 	userHandler := user_handler.NewUserHandler(userService)
 	monthHandler := month_handler.NewMonthHandler(monthService)
 
-	//Chi Mount
-	r.Route("/api", func(api chi.Router) {
+	//Gin Group
+	api := r.Group("/api")
+	userHandler.RegisterRoutes(api)
+	monthHandler.RegisterRoutes(api)
 
-		api.Mount("/users", userHandler.RegisterRoutes())
-		api.Mount("/months", monthHandler.RegisterRoutes())
-
-	})
-	http.ListenAndServe(serverPortStr, r)
-
-	return nil
+	return r.Run(serverPortStr)
 }

@@ -18,4 +18,4 @@ SET username = @username,password = @password,email =  @email, phone_number = @p
 WHERE id = @user_id;
 
 -- name: DeleteUser :exec
-DELETE FROM users WHERE id = $1;
+DELETE FROM users WHERE id = $1 RETURNING id;

@@ -1,14 +1,12 @@
 package user_handler
 
 import (
-	"encoding/json"
 	"net/http"
 	"time"
 
 	user_service "github.com/098765432m/monthly_planner_backend/internal/service/user"
 	"github.com/098765432m/monthly_planner_backend/internal/utils"
-	"github.com/go-chi/chi/v5"
-	"go.uber.org/zap"
+	"github.com/gin-gonic/gin"
 )
 
 type UserHandler struct {
@@ -21,15 +19,14 @@ func NewUserHandler(service *user_service.UserService) *UserHandler {
 	}
 }
 
-func (h *UserHandler) RegisterRoutes() chi.Router {
-	r := chi.NewRouter()
+func (h *UserHandler) RegisterRoutes(rg *gin.RouterGroup) {
+	user := rg.Group("/users")
 
-	r.Post("/", h.CreateUser)
-	r.Get("/{id}", h.GetUserById)
-	r.Put("/{id}", h.UpdateUserById)
-	r.Delete("/{id}", h.DeleteUserById)
+	user.POST("/", h.CreateUser)
+	user.GET("/:id", h.GetUserById)
+	user.PUT("/:id", h.UpdateUserById)
+	user.DELETE("/:id", h.DeleteUserById)
 
-	return r
 }
 
 type UserResponse struct {
@@ -45,12 +42,12 @@ type UserResponse struct {
 
 // TODO Add Login, Register
 
-func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
-	idParam := chi.URLParam(r, "id")
+func (h *UserHandler) GetUserById(c *gin.Context) {
+	idParam := c.Param("id")
 
-	user, err := h.service.GetUserById(r.Context(), idParam)
+	user, err := h.service.GetUserById(c.Request.Context(), idParam)
 	if err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, "Failed to get user")
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Failed to Get User!"))
 	}
 
 	userResp := UserResponse{
@@ -64,21 +61,19 @@ func (h *UserHandler) GetUserById(w http.ResponseWriter, r *http.Request) {
 		UpdatedAt:   user.UpdatedAt.Time,
 	}
 
-	utils.WriteJSON(w, http.StatusOK, userResp, "")
+	c.JSON(http.StatusCreated, utils.SuccessResponse(userResp, ""))
 }
 
-func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) CreateUser(c *gin.Context) {
 	var req user_service.CreateUserServiceParams
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "Bad Request Error")
-		return
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("Bad Request Error"))
 	}
 
-	user, err := h.service.CreateUser(r.Context(), &req)
+	user, err := h.service.CreateUser(c.Request.Context(), &req)
 	if err != nil {
-		zap.S().Error(err)
-		utils.WriteError(w, http.StatusBadRequest, "Failed to get User")
-		return
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Failed to Create User!"))
 	}
 
 	userResp := UserResponse{
@@ -88,19 +83,19 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		PhoneNumber: user.PhoneNumber,
 	}
 
-	utils.WriteJSON(w, http.StatusCreated, userResp, "Tao tai khoan thanh cong!")
+	c.JSON(http.StatusCreated, utils.SuccessResponse(userResp, "Tao tai khoan thanh cong!"))
 }
 
-func (h *UserHandler) UpdateUserById(w http.ResponseWriter, r *http.Request) {
-	idParam := chi.URLParam(r, "id")
+func (h *UserHandler) UpdateUserById(c *gin.Context) {
+	idParam := c.Param("id")
 
 	var req user_service.UpdateUserByIdServiceParams
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "Invalid Request params")
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("Bad Request Error"))
 		return
 	}
 
-	err := h.service.UpdateUserById(r.Context(), idParam, &user_service.UpdateUserByIdServiceParams{
+	err := h.service.UpdateUserById(c.Request.Context(), idParam, &user_service.UpdateUserByIdServiceParams{
 		Username:    req.Username,
 		Password:    req.Password,
 		Email:       req.Email,
@@ -110,20 +105,20 @@ func (h *UserHandler) UpdateUserById(w http.ResponseWriter, r *http.Request) {
 	})
 
 	if err != nil {
-		utils.WriteError(w, http.StatusInternalServerError, "Failed to Update user")
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Failed to Update User!"))
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, nil, "Cap nhat nguoi dung thanh cong!")
+	c.JSON(http.StatusOK, utils.SuccessResponse(nil, "Cap nhat tai khoan thanh cong!"))
 }
 
-func (h *UserHandler) DeleteUserById(w http.ResponseWriter, r *http.Request) {
-	idParam := chi.URLParam(r, "id")
+func (h *UserHandler) DeleteUserById(c *gin.Context) {
+	idParam := c.Param("id")
 
-	if err := h.service.DeleteUserById(r.Context(), idParam); err != nil {
-		utils.WriteError(w, http.StatusBadRequest, "Failed to Delete User")
+	if err := h.service.DeleteUserById(c.Request.Context(), idParam); err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("Bad Request Error"))
 		return
 	}
 
-	utils.WriteJSON(w, http.StatusOK, nil, "Xoa tai khoan thanh cong!")
+	c.JSON(http.StatusOK, utils.SuccessResponse(nil, "Xoa tai khoan thanh cong!"))
 }
