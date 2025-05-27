@@ -31,8 +31,8 @@ func (e *TaskStatusEnum) Scan(src interface{}) error {
 }
 
 type NullTaskStatusEnum struct {
-	TaskStatusEnum TaskStatusEnum
-	Valid          bool // Valid is true if TaskStatusEnum is not NULL
+	TaskStatusEnum TaskStatusEnum `json:"task_status_enum"`
+	Valid          bool           `json:"valid"` // Valid is true if TaskStatusEnum is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -53,27 +53,13 @@ func (ns NullTaskStatusEnum) Value() (driver.Value, error) {
 	return string(ns.TaskStatusEnum), nil
 }
 
-type Day struct {
-	ID        pgtype.UUID
-	Date      pgtype.Date
-	DayOfWeek int32
-	MonthID   pgtype.UUID
-}
-
-type Month struct {
-	ID        pgtype.UUID
-	Year      int32
-	Month     int32
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
-}
-
 type Task struct {
-	ID          pgtype.UUID
-	Name        string
-	Description pgtype.Text
-	Status      TaskStatusEnum
-	TimeStart   pgtype.Time
-	TimeEnd     pgtype.Time
-	DayID       pgtype.UUID
+	ID             pgtype.UUID    `json:"id"`
+	Name           string         `json:"name"`
+	Description    pgtype.Text    `json:"description"`
+	Status         TaskStatusEnum `json:"status"`
+	TimeStart      pgtype.Time    `json:"time_start"`
+	TimeEnd        pgtype.Time    `json:"time_end"`
+	DayID          pgtype.UUID    `json:"day_id"`
+	TaskCategoryID pgtype.UUID    `json:"task_category_id"`
 }

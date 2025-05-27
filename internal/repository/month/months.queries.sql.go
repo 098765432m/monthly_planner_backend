@@ -18,8 +18,8 @@ RETURNING id
 `
 
 type CreateMonthParams struct {
-	Month int32
-	Year  int32
+	Month int32 `json:"month"`
+	Year  int32 `json:"year"`
 }
 
 func (q *Queries) CreateMonth(ctx context.Context, arg CreateMonthParams) (pgtype.UUID, error) {
@@ -37,4 +37,95 @@ WHERE id = $1
 func (q *Queries) DeleleMonth(ctx context.Context, id pgtype.UUID) error {
 	_, err := q.db.Exec(ctx, deleleMonth, id)
 	return err
+}
+
+const getAllTasksOfMonth = `-- name: GetAllTasksOfMonth :many
+SELECT t.id, t.name, t.description, t.status, t.time_start, t.time_end, d.date
+FROM tasks t
+JOIN days d ON t.day_id = d.id
+JOIN months m ON d.month_id = m.id
+WHERE m.month = $1 AND m.year = $2
+ORDER BY d.date
+`
+
+type GetAllTasksOfMonthParams struct {
+	MonthNumber int32 `json:"month_number"`
+	YearNumber  int32 `json:"year_number"`
+}
+
+type GetAllTasksOfMonthRow struct {
+	ID          pgtype.UUID    `json:"id"`
+	Name        string         `json:"name"`
+	Description pgtype.Text    `json:"description"`
+	Status      TaskStatusEnum `json:"status"`
+	TimeStart   pgtype.Time    `json:"time_start"`
+	TimeEnd     pgtype.Time    `json:"time_end"`
+	Date        pgtype.Date    `json:"date"`
+}
+
+func (q *Queries) GetAllTasksOfMonth(ctx context.Context, arg GetAllTasksOfMonthParams) ([]GetAllTasksOfMonthRow, error) {
+	rows, err := q.db.Query(ctx, getAllTasksOfMonth, arg.MonthNumber, arg.YearNumber)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllTasksOfMonthRow
+	for rows.Next() {
+		var i GetAllTasksOfMonthRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Status,
+			&i.TimeStart,
+			&i.TimeEnd,
+			&i.Date,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getMonthById = `-- name: GetMonthById :one
+SELECT id, month, year FROM months WHERE id = $1
+`
+
+type GetMonthByIdRow struct {
+	ID    pgtype.UUID `json:"id"`
+	Month int32       `json:"month"`
+	Year  int32       `json:"year"`
+}
+
+func (q *Queries) GetMonthById(ctx context.Context, id pgtype.UUID) (GetMonthByIdRow, error) {
+	row := q.db.QueryRow(ctx, getMonthById, id)
+	var i GetMonthByIdRow
+	err := row.Scan(&i.ID, &i.Month, &i.Year)
+	return i, err
+}
+
+const getMonthByMonthAndYear = `-- name: GetMonthByMonthAndYear :one
+SELECT id, month, year FROM months WHERE month = $1 AND year = $2
+`
+
+type GetMonthByMonthAndYearParams struct {
+	Month int32 `json:"month"`
+	Year  int32 `json:"year"`
+}
+
+type GetMonthByMonthAndYearRow struct {
+	ID    pgtype.UUID `json:"id"`
+	Month int32       `json:"month"`
+	Year  int32       `json:"year"`
+}
+
+func (q *Queries) GetMonthByMonthAndYear(ctx context.Context, arg GetMonthByMonthAndYearParams) (GetMonthByMonthAndYearRow, error) {
+	row := q.db.QueryRow(ctx, getMonthByMonthAndYear, arg.Month, arg.Year)
+	var i GetMonthByMonthAndYearRow
+	err := row.Scan(&i.ID, &i.Month, &i.Year)
+	return i, err
 }

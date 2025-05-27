@@ -26,7 +26,11 @@ func (h *MonthHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	month := rg.Group("/months")
 
 	month.POST("/", h.CreateMonth)
+
 	month.DELETE("/:id", h.DeleteMonth)
+	month.GET("/:id/tasks", h.GetAllTasksOfMonth)
+
+	month.POST("/tasks", h.SaveAllTaskOfMonth)
 }
 
 func (h *MonthHandler) Test(w http.ResponseWriter, r *http.Request) {
@@ -84,4 +88,48 @@ func (h *MonthHandler) DeleteMonth(c *gin.Context) {
 
 	c.JSON(http.StatusOK, utils.SuccessResponse(nil, "Month deleted"))
 
+}
+
+func (h *MonthHandler) GetAllTasksOfMonth(c *gin.Context) {
+
+	// Parse month ID
+	monthIdParam := c.Param("id")
+	var monthId pgtype.UUID
+	if err := monthId.Scan(monthIdParam); err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("Invalid monthId UUID!"))
+		return
+	}
+
+	tasks, err := h.service.GetAllTasksOfMonth(c.Request.Context(), monthId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Failed to get all tasks of month"))
+		return
+	}
+	c.JSON(http.StatusOK, utils.SuccessResponse(tasks, ""))
+}
+
+type SaveAllTaskOfMonthRequest struct {
+	Month    int                      `json:"month"`
+	Year     int                      `json:"year"`
+	DayTasks []month_service.TaskDays `json:"day_tasks,omitempty"`
+}
+
+func (h *MonthHandler) SaveAllTaskOfMonth(c *gin.Context) {
+
+	var req SaveAllTaskOfMonthRequest
+	err := c.ShouldBindJSON(&req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse("Failed to parsed req body!"))
+		return
+	}
+
+	zap.L().Info("Save all tasks req: ", zap.Int("month", req.Month), zap.Int("year", req.Year), zap.Any("task_days:", req.DayTasks))
+
+	err = h.service.SaveAllTaskOfMonth(c.Request.Context(), req.Month, req.Year, req.DayTasks)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse("Failed to Save all tasks of that month"))
+		return
+	}
+
+	c.JSON(http.StatusOK, utils.SuccessResponse(nil, "Luu hoat dong thang thanh cong!"))
 }

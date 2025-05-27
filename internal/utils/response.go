@@ -6,14 +6,14 @@ import (
 
 func ErrorResponse(msg string) gin.H {
 	return gin.H{
-		"Success": true,
+		"Success": false,
 		"Error":   msg,
 	}
 }
 
 func SuccessResponse(result any, msg string) gin.H {
 	return gin.H{
-		"Success": false,
+		"Success": true,
 		"Result":  result,
 		"Message": msg,
 	}

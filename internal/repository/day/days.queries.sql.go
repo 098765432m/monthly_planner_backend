@@ -11,20 +11,23 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const createDay = `-- name: CreateDay :exec
+const createDay = `-- name: CreateDay :one
 INSERT INTO days (date, day_of_week, month_id)
-VALUES ($1, $2, $3)
+VALUES ($1::date, $2, $3::UUID)
+RETURNING id
 `
 
 type CreateDayParams struct {
-	Date      pgtype.Date
-	DayOfWeek int32
-	MonthID   pgtype.UUID
+	Date      pgtype.Date `json:"date"`
+	DayOfWeek int32       `json:"day_of_week"`
+	MonthID   pgtype.UUID `json:"month_id"`
 }
 
-func (q *Queries) CreateDay(ctx context.Context, arg CreateDayParams) error {
-	_, err := q.db.Exec(ctx, createDay, arg.Date, arg.DayOfWeek, arg.MonthID)
-	return err
+func (q *Queries) CreateDay(ctx context.Context, arg CreateDayParams) (pgtype.UUID, error) {
+	row := q.db.QueryRow(ctx, createDay, arg.Date, arg.DayOfWeek, arg.MonthID)
+	var id pgtype.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const createRangeOfDays = `-- name: CreateRangeOfDays :exec
@@ -37,14 +40,30 @@ FROM generate_series($2::date, $3::date, '1 day') AS gs
 `
 
 type CreateRangeOfDaysParams struct {
-	MonthID   pgtype.UUID
-	DateStart pgtype.Date
-	DateEnd   pgtype.Date
+	MonthID   pgtype.UUID `json:"month_id"`
+	DateStart pgtype.Date `json:"date_start"`
+	DateEnd   pgtype.Date `json:"date_end"`
 }
 
 func (q *Queries) CreateRangeOfDays(ctx context.Context, arg CreateRangeOfDaysParams) error {
 	_, err := q.db.Exec(ctx, createRangeOfDays, arg.MonthID, arg.DateStart, arg.DateEnd)
 	return err
+}
+
+const getDayByDate = `-- name: GetDayByDate :one
+SELECT id, date, day_of_week, month_id FROM days WHERE date = $1::date
+`
+
+func (q *Queries) GetDayByDate(ctx context.Context, date pgtype.Date) (Day, error) {
+	row := q.db.QueryRow(ctx, getDayByDate, date)
+	var i Day
+	err := row.Scan(
+		&i.ID,
+		&i.Date,
+		&i.DayOfWeek,
+		&i.MonthID,
+	)
+	return i, err
 }
 
 const updateDayById = `-- name: UpdateDayById :exec
@@ -56,10 +75,10 @@ WHERE id = $1
 `
 
 type UpdateDayByIdParams struct {
-	ID        pgtype.UUID
-	Date      pgtype.Date
-	DayOfWeek int32
-	MonthID   pgtype.UUID
+	ID        pgtype.UUID `json:"id"`
+	Date      pgtype.Date `json:"date"`
+	DayOfWeek int32       `json:"day_of_week"`
+	MonthID   pgtype.UUID `json:"month_id"`
 }
 
 func (q *Queries) UpdateDayById(ctx context.Context, arg UpdateDayByIdParams) error {

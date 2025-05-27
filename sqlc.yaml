@@ -11,13 +11,12 @@ sql:
         out: "internal/repository/user"
         package: "user_repository"
         sql_package: "pgx/v5"
+        emit_json_tags: true
 
   # Tasks
   - engine: "postgresql"
     schema:
       - "internal/database/schema/tasks.schema.sql"
-      - "internal/database/schema/days.schema.sql"
-      - "internal/database/schema/months.schema.sql"
     queries:
       - "internal/database/queries/tasks.queries.sql"
     gen:
@@ -25,6 +24,21 @@ sql:
         out: "internal/repository/task"
         package: "task_repository"
         sql_package: "pgx/v5"
+        emit_json_tags: true
+
+  # Task_Categories
+  - engine: "postgresql"
+    schema:
+      - "internal/database/schema/task_categories.schema.sql"
+      - "internal/database/schema/months.schema.sql"
+    queries:
+      - "internal/database/queries/task_categories.queries.sql"
+    gen:
+      go:
+        out: "internal/repository/task_category"
+        package: "task_category_repository"
+        sql_package: "pgx/v5"
+        emit_json_tags: true
 
   # Days
   - engine: "postgresql"
@@ -37,10 +51,13 @@ sql:
         out: "internal/repository/day"
         package: "day_repository"
         sql_package: "pgx/v5"
+        emit_json_tags: true
 
   # Months
   - engine: "postgresql"
     schema:
+      - "internal/database/schema/tasks.schema.sql"
+      - "internal/database/schema/days.schema.sql"
       - "internal/database/schema/months.schema.sql"
     queries:
       - "internal/database/queries/months.queries.sql"
@@ -49,3 +66,4 @@ sql:
         out: "internal/repository/month"
         package: "month_repository"
         sql_package: "pgx/v5"
+        emit_json_tags: true

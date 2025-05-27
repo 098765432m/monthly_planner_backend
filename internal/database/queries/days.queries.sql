@@ -1,6 +1,10 @@
--- name: CreateDay :exec
+-- name: CreateDay :one
 INSERT INTO days (date, day_of_week, month_id)
-VALUES ($1, $2, $3);
+VALUES (@date::date, @day_of_week, @month_id::UUID)
+RETURNING id;
+
+-- name: GetDayByDate :one
+SELECT id, date, day_of_week, month_id FROM days WHERE date = @date::date;
 
 -- name: CreateRangeOfDays :exec
 INSERT INTO days (date, day_of_week, month_id)

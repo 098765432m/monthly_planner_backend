@@ -18,10 +18,10 @@ RETURNING id, username, password, email, phone_number, is_active, role, created_
 `
 
 type CreateUserParams struct {
-	Username    string
-	Password    string
-	Email       string
-	PhoneNumber string
+	Username    string `json:"username"`
+	Password    string `json:"password"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone_number"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -47,7 +47,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const deleteUser = `-- name: DeleteUser :exec
-DELETE FROM users WHERE id = $1
+DELETE FROM users WHERE id = $1 RETURNING id
 `
 
 func (q *Queries) DeleteUser(ctx context.Context, id pgtype.UUID) error {
@@ -120,13 +120,13 @@ WHERE id = $7
 `
 
 type UpdateUserParams struct {
-	Username    string
-	Password    string
-	Email       string
-	PhoneNumber string
-	IsActive    bool
-	Role        RoleEnum
-	UserID      pgtype.UUID
+	Username    string      `json:"username"`
+	Password    string      `json:"password"`
+	Email       string      `json:"email"`
+	PhoneNumber string      `json:"phone_number"`
+	IsActive    bool        `json:"is_active"`
+	Role        RoleEnum    `json:"role"`
+	UserID      pgtype.UUID `json:"user_id"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {

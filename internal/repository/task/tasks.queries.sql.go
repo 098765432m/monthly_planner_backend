@@ -12,24 +12,30 @@ import (
 )
 
 const createTask = `-- name: CreateTask :one
-INSERT INTO tasks (name, description, time_start, time_end)
-VALUES ($1, $2, $3, $4)
-RETURNING id, name, description, status, time_start, time_end, day_id
+INSERT INTO tasks (name, description, status, time_start, time_end, day_id, task_category_id)
+VALUES ($1::text, $2::text, $3, $4::time, $5::time, $6::UUID, $7::UUID)
+RETURNING id, name, description, status, time_start, time_end, day_id, task_category_id
 `
 
 type CreateTaskParams struct {
-	Name        string
-	Description pgtype.Text
-	TimeStart   pgtype.Time
-	TimeEnd     pgtype.Time
+	Name           string             `json:"name"`
+	Description    pgtype.Text        `json:"description"`
+	Status         NullTaskStatusEnum `json:"status"`
+	TimeStart      pgtype.Time        `json:"time_start"`
+	TimeEnd        pgtype.Time        `json:"time_end"`
+	DayID          pgtype.UUID        `json:"day_id"`
+	TaskCategoryID pgtype.UUID        `json:"task_category_id"`
 }
 
 func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, error) {
 	row := q.db.QueryRow(ctx, createTask,
 		arg.Name,
 		arg.Description,
+		arg.Status,
 		arg.TimeStart,
 		arg.TimeEnd,
+		arg.DayID,
+		arg.TaskCategoryID,
 	)
 	var i Task
 	err := row.Scan(
@@ -40,21 +46,22 @@ func (q *Queries) CreateTask(ctx context.Context, arg CreateTaskParams) (Task, e
 		&i.TimeStart,
 		&i.TimeEnd,
 		&i.DayID,
+		&i.TaskCategoryID,
 	)
 	return i, err
 }
 
 const deleteTaskById = `-- name: DeleteTaskById :exec
-DELETE FROM tasks WHERE id = $1
+DELETE FROM tasks WHERE id = $1::UUID
 `
 
-func (q *Queries) DeleteTaskById(ctx context.Context, id pgtype.UUID) error {
-	_, err := q.db.Exec(ctx, deleteTaskById, id)
+func (q *Queries) DeleteTaskById(ctx context.Context, dollar_1 pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteTaskById, dollar_1)
 	return err
 }
 
 const getAllTaskOfADay = `-- name: GetAllTaskOfADay :many
-SELECT id, name, description, status, time_start, time_end, day_id
+SELECT id, name, description, status, time_start, time_end, day_id, task_category_id
 FROM tasks
 WHERE day_id = $1
 ORDER BY time_start
@@ -77,6 +84,7 @@ func (q *Queries) GetAllTaskOfADay(ctx context.Context, dayID pgtype.UUID) ([]Ta
 			&i.TimeStart,
 			&i.TimeEnd,
 			&i.DayID,
+			&i.TaskCategoryID,
 		); err != nil {
 			return nil, err
 		}
@@ -88,78 +96,54 @@ func (q *Queries) GetAllTaskOfADay(ctx context.Context, dayID pgtype.UUID) ([]Ta
 	return items, nil
 }
 
-const getAllTaskOfMonth = `-- name: GetAllTaskOfMonth :many
-SELECT t.id, t.name, t.description, t.status, t.time_start, t.time_end, d.date
-FROM tasks t
-JOIN days d ON t.day_id = d.id
-JOIN months m ON d.month_id = m.id
-ORDER BY d.date
+const getTaskById = `-- name: GetTaskById :one
+SELECT id, name, description, status, time_start, time_end, day_id, task_category_id FROM tasks WHERE id = $1::UUID
 `
 
-type GetAllTaskOfMonthRow struct {
-	ID          pgtype.UUID
-	Name        string
-	Description pgtype.Text
-	Status      TaskStatusEnum
-	TimeStart   pgtype.Time
-	TimeEnd     pgtype.Time
-	Date        pgtype.Date
-}
-
-func (q *Queries) GetAllTaskOfMonth(ctx context.Context) ([]GetAllTaskOfMonthRow, error) {
-	rows, err := q.db.Query(ctx, getAllTaskOfMonth)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []GetAllTaskOfMonthRow
-	for rows.Next() {
-		var i GetAllTaskOfMonthRow
-		if err := rows.Scan(
-			&i.ID,
-			&i.Name,
-			&i.Description,
-			&i.Status,
-			&i.TimeStart,
-			&i.TimeEnd,
-			&i.Date,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetTaskById(ctx context.Context, dollar_1 pgtype.UUID) (Task, error) {
+	row := q.db.QueryRow(ctx, getTaskById, dollar_1)
+	var i Task
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Status,
+		&i.TimeStart,
+		&i.TimeEnd,
+		&i.DayID,
+		&i.TaskCategoryID,
+	)
+	return i, err
 }
 
 const updateTaskById = `-- name: UpdateTaskById :one
 UPDATE tasks
-SET name = $2, description = $3, status = $4, time_start = $5, time_end = $6, day_id = $7
-WHERE id = $1
-RETURNING id, name, description, status, time_start, time_end, day_id
+SET name = $1::text, description = $2::text, status = $3, time_start = $4::time, time_end = $5::time, day_id = $6::UUID, task_category_id = $7::UUID
+WHERE id = $8::UUID
+RETURNING id, name, description, status, time_start, time_end, day_id, task_category_id
 `
 
 type UpdateTaskByIdParams struct {
-	ID          pgtype.UUID
-	Name        string
-	Description pgtype.Text
-	Status      TaskStatusEnum
-	TimeStart   pgtype.Time
-	TimeEnd     pgtype.Time
-	DayID       pgtype.UUID
+	Name           string             `json:"name"`
+	Description    pgtype.Text        `json:"description"`
+	Status         NullTaskStatusEnum `json:"status"`
+	TimeStart      pgtype.Time        `json:"time_start"`
+	TimeEnd        pgtype.Time        `json:"time_end"`
+	DayID          pgtype.UUID        `json:"day_id"`
+	TaskCategoryID pgtype.UUID        `json:"task_category_id"`
+	TaskID         pgtype.UUID        `json:"task_id"`
 }
 
 func (q *Queries) UpdateTaskById(ctx context.Context, arg UpdateTaskByIdParams) (Task, error) {
 	row := q.db.QueryRow(ctx, updateTaskById,
-		arg.ID,
 		arg.Name,
 		arg.Description,
 		arg.Status,
 		arg.TimeStart,
 		arg.TimeEnd,
 		arg.DayID,
+		arg.TaskCategoryID,
+		arg.TaskID,
 	)
 	var i Task
 	err := row.Scan(
@@ -170,6 +154,7 @@ func (q *Queries) UpdateTaskById(ctx context.Context, arg UpdateTaskByIdParams) 
 		&i.TimeStart,
 		&i.TimeEnd,
 		&i.DayID,
+		&i.TaskCategoryID,
 	)
 	return i, err
 }

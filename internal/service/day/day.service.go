@@ -4,6 +4,7 @@ import (
 	"context"
 
 	day_repository "github.com/098765432m/monthly_planner_backend/internal/repository/day"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type DayService struct {
@@ -16,8 +17,8 @@ func NewDayService(repo *day_repository.Queries) *DayService {
 	}
 }
 
-func (s *DayService) CreateDay(ctx context.Context, arg day_repository.CreateDayParams) error {
-	return s.repo.CreateDay(ctx, arg)
+func (s *DayService) CreateDay(ctx context.Context, args day_repository.CreateDayParams) (pgtype.UUID, error) {
+	return s.repo.CreateDay(ctx, args)
 }
 
 func (s *DayService) CreateRangeOfDays(ctx context.Context, arg day_repository.CreateRangeOfDaysParams) error {

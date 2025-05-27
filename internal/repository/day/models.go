@@ -9,8 +9,8 @@ import (
 )
 
 type Day struct {
-	ID        pgtype.UUID
-	Date      pgtype.Date
-	DayOfWeek int32
-	MonthID   pgtype.UUID
+	ID        pgtype.UUID `json:"id"`
+	Date      pgtype.Date `json:"date"`
+	DayOfWeek int32       `json:"day_of_week"`
+	MonthID   pgtype.UUID `json:"month_id"`
 }

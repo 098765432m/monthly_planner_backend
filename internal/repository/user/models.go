@@ -33,8 +33,8 @@ func (e *RoleEnum) Scan(src interface{}) error {
 }
 
 type NullRoleEnum struct {
-	RoleEnum RoleEnum
-	Valid    bool // Valid is true if RoleEnum is not NULL
+	RoleEnum RoleEnum `json:"role_enum"`
+	Valid    bool     `json:"valid"` // Valid is true if RoleEnum is not NULL
 }
 
 // Scan implements the Scanner interface.
@@ -56,13 +56,13 @@ func (ns NullRoleEnum) Value() (driver.Value, error) {
 }
 
 type User struct {
-	ID          pgtype.UUID
-	Username    string
-	Password    string
-	Email       string
-	PhoneNumber string
-	IsActive    bool
-	Role        RoleEnum
-	CreatedAt   pgtype.Timestamptz
-	UpdatedAt   pgtype.Timestamptz
+	ID          pgtype.UUID        `json:"id"`
+	Username    string             `json:"username"`
+	Password    string             `json:"password"`
+	Email       string             `json:"email"`
+	PhoneNumber string             `json:"phone_number"`
+	IsActive    bool               `json:"is_active"`
+	Role        RoleEnum           `json:"role"`
+	CreatedAt   pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt   pgtype.Timestamptz `json:"updated_at"`
 }

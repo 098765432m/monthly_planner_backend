@@ -34,14 +34,10 @@ func (s *TaskService) DeleteTaskById(ctx context.Context, id pgtype.UUID) error 
 }
 
 func (s *TaskService) UpdateTaskById(ctx context.Context, arg task_repository.UpdateTaskByIdParams) (task_repository.Task, error) {
-	if !arg.ID.Valid {
+	if !arg.TaskID.Valid {
 		zap.S().Errorln("id is not valid")
 		return task_repository.Task{}, fmt.Errorf("id is not valid")
 	}
 
 	return s.repo.UpdateTaskById(ctx, arg)
-}
-
-func (s *TaskService) GetAllTasksOfADay(ctx context.Context) {
-
 }
